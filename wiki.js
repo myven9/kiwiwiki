@@ -491,20 +491,23 @@ function renderQuoteCard(rawLines, scopeKey, ctx) {
 function renderWikiText(content, scopeKey, ctx) {
   // 줄 단위로 처리하되, '>'로 시작하는 연속된 줄은 어록 카드로, '- '로 시작하는 연속된 줄은 목록으로 묶는다
   const lines = String(content ?? "").split("\n");
+  // { html, block } 형태로 모아둔다. block=true 인 항목(카드/목록/소제목박스) 앞뒤에는
+  // .section-body 의 white-space:pre-wrap 때문에 "\n"이 그대로 빈 줄로 보이는 걸 막기 위해
+  // 개행 문자를 넣지 않는다 (일반 텍스트 줄끼리만 "\n"으로 이어붙인다).
   const output = [];
   let quoteBuffer = null;
   let listBuffer = null;
 
   const flushQuote = () => {
     if (quoteBuffer) {
-      output.push(renderQuoteCard(quoteBuffer, scopeKey, ctx));
+      output.push({ html: renderQuoteCard(quoteBuffer, scopeKey, ctx), block: true });
       quoteBuffer = null;
     }
   };
 
   const flushList = () => {
     if (listBuffer) {
-      output.push(renderBulletList(listBuffer, scopeKey, ctx));
+      output.push({ html: renderBulletList(listBuffer, scopeKey, ctx), block: true });
       listBuffer = null;
     }
   };
@@ -516,7 +519,7 @@ function renderWikiText(content, scopeKey, ctx) {
     if (labelMatch) {
       flushQuote();
       flushList();
-      output.push(renderLabelBox(labelMatch[1], scopeKey, ctx));
+      output.push({ html: renderLabelBox(labelMatch[1], scopeKey, ctx), block: true });
     } else if (quoteMatch) {
       flushList();
       if (!quoteBuffer) quoteBuffer = [];
@@ -528,13 +531,20 @@ function renderWikiText(content, scopeKey, ctx) {
     } else {
       flushQuote();
       flushList();
-      output.push(renderWikiTextLine(line, scopeKey, ctx));
+      output.push({ html: renderWikiTextLine(line, scopeKey, ctx), block: false });
     }
   }
   flushQuote();
   flushList();
 
-  return output.join("\n");
+  let result = "";
+  for (let i = 0; i < output.length; i++) {
+    if (i > 0 && !output[i - 1].block && !output[i].block) {
+      result += "\n";
+    }
+    result += output[i].html;
+  }
+  return result;
 }
 
 function renderWikiTextLine(content, scopeKey, ctx) {
