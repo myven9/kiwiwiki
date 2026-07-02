@@ -351,15 +351,39 @@ function flattenTree(nodes, out = []) {
   return out;
 }
 
+// 어떤 텍스트 안에서 [n] 마커들이 실제로 등장하는 순서를 돌려준다 (첫 등장 기준, 중복 제거)
+// 마커가 텍스트에 없는 각주(예: 실수로 지워졌거나 아직 반영 전)는 맨 뒤로, 그 안에서는 저장된 번호순으로
+function getAppearanceOrderMap(text) {
+  const order = new Map();
+  let idx = 0;
+  for (const m of String(text ?? "").matchAll(/\[(\d+)\]/g)) {
+    const n = Number(m[1]);
+    if (!order.has(n)) order.set(n, idx++);
+  }
+  return order;
+}
+
+function sortFootnotesByAppearance(footnotes, appearanceOrder) {
+  return footnotes.slice().sort((a, b) => {
+    const ai = appearanceOrder.has(a.number) ? appearanceOrder.get(a.number) : Infinity;
+    const bi = appearanceOrder.has(b.number) ? appearanceOrder.get(b.number) : Infinity;
+    if (ai !== bi) return ai - bi;
+    return a.number - b.number;
+  });
+}
+
 // ============================================
-// 각주 전역 번호 매기기 (인포박스 → 문단 순서)
+// 각주 전역 번호 매기기 (인포박스 → 문단 순서, 각 범위 안에서는 "본문에 실제 등장하는 순서" 기준)
 // ============================================
-function assignGlobalFootnoteNumbers(infoboxFootnotes, orderedSections, footnotesBySection) {
+function assignGlobalFootnoteNumbers(doc, infoboxFootnotes, orderedSections, footnotesBySection) {
   const globalNumberMap = new Map();
   const footnoteList = [];
   let counter = 0;
 
-  const sortedInfobox = infoboxFootnotes.slice().sort((a, b) => a.number - b.number);
+  const infoboxItems = Array.isArray(doc?.infobox) ? doc.infobox : [];
+  const infoboxCombinedText = infoboxItems.map((item) => item.value).join("\n");
+  const infoboxAppearanceOrder = getAppearanceOrderMap(infoboxCombinedText);
+  const sortedInfobox = sortFootnotesByAppearance(infoboxFootnotes, infoboxAppearanceOrder);
   for (const fn of sortedInfobox) {
     counter += 1;
     globalNumberMap.set(`infobox:${fn.document_id}:${fn.number}`, counter);
@@ -367,10 +391,10 @@ function assignGlobalFootnoteNumbers(infoboxFootnotes, orderedSections, footnote
   }
 
   for (const section of orderedSections) {
-    const localFootnotes = (footnotesBySection.get(section.id) || [])
-      .slice()
-      .sort((a, b) => a.number - b.number);
-    for (const fn of localFootnotes) {
+    const localFootnotes = footnotesBySection.get(section.id) || [];
+    const appearanceOrder = getAppearanceOrderMap(section.content);
+    const sorted = sortFootnotesByAppearance(localFootnotes, appearanceOrder);
+    for (const fn of sorted) {
       counter += 1;
       globalNumberMap.set(`section:${section.id}:${fn.number}`, counter);
       footnoteList.push({ globalNumber: counter, content: fn.content, id: fn.id });
@@ -1765,6 +1789,7 @@ async function loadDocument() {
   const tree = buildTree(sections || []);
   const orderedSections = flattenTree(tree);
   const { globalNumberMap, footnoteList } = assignGlobalFootnoteNumbers(
+    doc,
     infoboxFootnotes || [],
     orderedSections,
     footnotesBySection
