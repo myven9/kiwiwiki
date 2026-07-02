@@ -40,7 +40,7 @@ body {
 
 .site-header {
   background: #01a680;
-  padding: 10px 18px;
+  padding: 10px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -49,7 +49,7 @@ body {
 .site-header .brand {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 8px;
   color: #fff;
   text-decoration: none;
   font-weight: 700;
@@ -462,7 +462,7 @@ body {
   font-weight: 700;
   text-align: center;
   padding: 12px 10px;
-  font-size: 18px;
+  font-size: 15px;
   position: relative;
   display: flex;
   align-items: center;
@@ -480,8 +480,8 @@ body {
 }
 
 .infobox-title-subtitle {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 11.5px;
+  font-weight: 500;
   opacity: 0.85;
   margin-top: 2px;
 }
@@ -949,6 +949,7 @@ body {
   padding: 4px 10px;
   font-size: 12.5px;
   cursor: pointer;
+  color: var(--text);
 }
 
 .editor-tool-btn:hover {
