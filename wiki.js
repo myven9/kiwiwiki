@@ -13,11 +13,12 @@ import {
   IMAGE_BUCKET,
 } from "./config.js";
 
-// 세션을 sessionStorage에 저장 -> 탭/창을 닫으면 세션이 사라져서 자동 로그아웃됩니다.
-// (localStorage를 쓰면 브라우저를 껐다 켜도 로그인이 유지되는데, 공용 계정 특성상 원치 않는 동작)
+// 세션을 localStorage에 저장 -> 탭/창을 닫거나 앱을 껐다 켜도 로그인 상태가 유지됩니다.
+// "로그아웃" 버튼을 직접 누르기 전까지는 계속 관리자로 로그인되어 있습니다.
+// (공용 계정 특성상, 다른 사람과 공유하는 기기에서 로그인했다면 사용 후 반드시 로그아웃을 눌러야 합니다)
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
-    storage: window.sessionStorage,
+    storage: window.localStorage,
     persistSession: true,
     autoRefreshToken: true,
   },
