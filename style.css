@@ -377,6 +377,7 @@ body {
 
 .group-member-grid-former {
   opacity: 0.85;
+  gap: 6px 28px;
 }
 
 .group-member-former {
@@ -1241,7 +1242,7 @@ body {
 /* 어록/인용 카드 */
 .wiki-quote-card {
   position: relative;
-  margin: 12px 0;
+  margin: 6px 0;
   padding: 12px 16px;
   border: 1px dashed var(--border);
   border-left: 4px solid var(--text-muted);
