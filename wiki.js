@@ -363,7 +363,7 @@ function assignGlobalFootnoteNumbers(infoboxFootnotes, orderedSections, footnote
   for (const fn of sortedInfobox) {
     counter += 1;
     globalNumberMap.set(`infobox:${fn.document_id}:${fn.number}`, counter);
-    footnoteList.push({ globalNumber: counter, content: fn.content });
+    footnoteList.push({ globalNumber: counter, content: fn.content, id: fn.id });
   }
 
   for (const section of orderedSections) {
@@ -373,7 +373,7 @@ function assignGlobalFootnoteNumbers(infoboxFootnotes, orderedSections, footnote
     for (const fn of localFootnotes) {
       counter += 1;
       globalNumberMap.set(`section:${section.id}:${fn.number}`, counter);
-      footnoteList.push({ globalNumber: counter, content: fn.content });
+      footnoteList.push({ globalNumber: counter, content: fn.content, id: fn.id });
     }
   }
 
@@ -1401,6 +1401,29 @@ async function handleInfoboxFootnoteButtonClick(rowEl) {
   textarea.setSelectionRange(newCursor, newCursor);
 }
 
+// 각주 목록 하단에서 기존 각주 내용을 직접 수정 (번호/마커는 그대로 두고 content만 갱신)
+async function handleFootnoteEditClick(footnoteId) {
+  const existing = (currentPageData?.footnoteList || []).find((f) => String(f.id) === String(footnoteId));
+  if (!existing) return;
+
+  const newContent = await openTextModal({
+    title: "각주 수정",
+    label: "각주 내용을 수정하세요",
+    initialValue: existing.content,
+    multiline: true,
+    confirmLabel: "저장",
+  });
+  if (newContent === null || newContent === existing.content) return;
+
+  const { error } = await supabase.from("footnotes").update({ content: newContent }).eq("id", footnoteId);
+  if (error) {
+    alert("각주 수정 중 오류가 발생했습니다: " + error.message);
+    return;
+  }
+
+  await loadDocument();
+}
+
 function attachEditingHandlers() {
   root.addEventListener("click", async (e) => {
     // ------- 인포박스(기본 정보) 편집 -------
@@ -1478,6 +1501,12 @@ function attachEditingHandlers() {
     const infoboxRowDeleteBtn = e.target.closest(".infobox-row-delete-btn");
     if (infoboxRowDeleteBtn) {
       infoboxRowDeleteBtn.closest(".infobox-row-editor")?.remove();
+      return;
+    }
+
+    const footnoteEditBtn = e.target.closest(".footnote-edit-btn");
+    if (footnoteEditBtn) {
+      await handleFootnoteEditClick(footnoteEditBtn.dataset.footnoteId);
       return;
     }
 
@@ -1617,14 +1646,19 @@ function setupBackToTop() {
   });
 }
 
-function renderFootnoteList(footnoteList) {
+function renderFootnoteList(footnoteList, isAdmin) {
   if (!footnoteList.length) return "";
   return `
     <ul class="footnotes-box">
       ${footnoteList
         .map(
           (f) => `<li id="fn-${f.globalNumber}">
-            <a class="footnote-back-ref" href="#ref-${f.globalNumber}">[${f.globalNumber}]</a> ${esc(f.content)}
+            <a class="footnote-back-ref" href="#ref-${f.globalNumber}">[${f.globalNumber}]</a> <span class="footnote-text">${esc(f.content)}</span>
+            ${
+              isAdmin
+                ? `<button type="button" class="footnote-edit-btn" data-footnote-id="${f.id}" aria-label="각주 수정">✏</button>`
+                : ""
+            }
           </li>`
         )
         .join("")}
@@ -1675,7 +1709,7 @@ function renderPage() {
   <div class="layout-body">
     ${tree.map((n) => renderSection(n, 0, ctx)).join("")}
     ${isAdmin ? `<button type="button" class="add-top-section-btn">+ 새 최상위 문단 추가</button>` : ""}
-    ${renderFootnoteList(footnoteList)}
+    ${renderFootnoteList(footnoteList, isAdmin)}
   </div>
 
 </div>

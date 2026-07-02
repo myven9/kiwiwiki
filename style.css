@@ -1175,6 +1175,21 @@ body {
   margin-bottom: 4px;
 }
 
+.footnote-edit-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  font-size: 12px;
+  opacity: 0.6;
+  padding: 0 4px;
+  vertical-align: middle;
+}
+
+.footnote-edit-btn:hover {
+  opacity: 1;
+}
+
 .state-msg {
   padding: 60px 0;
   text-align: center;
