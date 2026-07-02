@@ -40,7 +40,7 @@ body {
 
 .site-header {
   background: #01a680;
-  padding: 10px 24px;
+  padding: 10px 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -49,7 +49,7 @@ body {
 .site-header .brand {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 2px;
   color: #fff;
   text-decoration: none;
   font-weight: 700;
@@ -463,7 +463,7 @@ body {
   font-weight: 700;
   text-align: center;
   padding: 12px 10px;
-  font-size: 15px;
+  font-size: 18px;
   position: relative;
   display: flex;
   align-items: center;
@@ -481,8 +481,8 @@ body {
 }
 
 .infobox-title-subtitle {
-  font-size: 11.5px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 700;
   opacity: 0.85;
   margin-top: 2px;
 }
