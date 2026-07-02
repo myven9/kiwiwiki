@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>개인 위키</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html">
+      <img class="site-logo" src="" alt="" hidden>
+      <span class="site-logo-text">나무위키</span>
+    </a>
+
+    <div class="admin-area">
+      <button class="admin-icon-btn" id="admin-login-btn" aria-label="관리자 로그인" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="4"></circle>
+          <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7"></path>
+        </svg>
+      </button>
+
+      <div class="admin-status" id="admin-status" hidden>
+        <span>관리자 모드</span>
+        <button class="admin-logout-btn" id="admin-logout-btn" type="button">로그아웃</button>
+      </div>
+
+      <div class="admin-login-popover" id="admin-login-popover" hidden>
+        <form id="admin-login-form">
+          <label class="modal-field">
+            <span>이메일</span>
+            <input type="email" id="admin-login-email" autocomplete="username" required>
+          </label>
+          <label class="modal-field">
+            <span>비밀번호</span>
+            <input type="password" id="admin-login-password" autocomplete="current-password" required>
+          </label>
+          <p class="modal-error" id="admin-login-error" hidden></p>
+          <div class="modal-actions">
+            <button type="button" class="modal-btn modal-btn-secondary" id="admin-login-cancel">취소</button>
+            <button type="submit" class="modal-btn modal-btn-primary" id="admin-login-submit">로그인</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-wrap">
+    <div id="app"></div>
+  </main>
+
+  <div class="modal-overlay" id="text-modal" hidden>
+    <div class="modal-box">
+      <h3 class="modal-box-title" id="text-modal-title"></h3>
+      <label class="modal-field">
+        <span id="text-modal-label"></span>
+        <input type="text" id="text-modal-input" hidden>
+        <textarea id="text-modal-textarea" rows="5" hidden></textarea>
+      </label>
+      <div class="modal-actions">
+        <button type="button" class="modal-btn modal-btn-secondary" id="text-modal-cancel">취소</button>
+        <button type="button" class="modal-btn modal-btn-primary" id="text-modal-confirm">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="wiki.js"></script>
+</body>
+</html>
