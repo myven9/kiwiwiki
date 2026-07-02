@@ -1232,6 +1232,7 @@ async function handleAddSubsection(parentId) {
     return;
   }
 
+  await bumpDocumentUpdatedAt(documentId);
   await loadDocument();
   await renumberAndPersist();
   await loadDocument();
@@ -1252,6 +1253,7 @@ async function handleRenameSection(sectionId, currentTitle) {
     alert("이름 변경 중 오류가 발생했습니다: " + error.message);
     return;
   }
+  await bumpDocumentUpdatedAt(currentPageData?.doc?.id);
   await loadDocument();
 }
 
@@ -1264,6 +1266,7 @@ async function handleDeleteSection(sectionId) {
     return;
   }
 
+  await bumpDocumentUpdatedAt(currentPageData?.doc?.id);
   await loadDocument();
   await renumberAndPersist();
   await loadDocument();
@@ -1282,6 +1285,7 @@ async function handleMoveSection(sectionId, direction) {
 
   [siblings[index], siblings[targetIndex]] = [siblings[targetIndex], siblings[index]];
 
+  await bumpDocumentUpdatedAt(currentPageData?.doc?.id);
   await renumberAndPersist();
   await loadDocument();
 }
@@ -1334,6 +1338,7 @@ async function handleSectionSave(sectionId) {
 
   editingSectionId = null;
   editingFootnotes = [];
+  await bumpDocumentUpdatedAt(currentPageData?.doc?.id);
   await loadDocument();
   alert("✅ 저장되었습니다.");
 }
@@ -1458,7 +1463,15 @@ async function handleFootnoteEditClick(footnoteId) {
     return;
   }
 
+  await bumpDocumentUpdatedAt(currentPageData?.doc?.id);
   await loadDocument();
+}
+
+// 문단/각주 등 documents 테이블을 직접 안 건드리는 수정을 했을 때도
+// "최근 수정 시각"이 정확히 반영되도록 documents.updated_at을 명시적으로 갱신한다.
+async function bumpDocumentUpdatedAt(documentId) {
+  if (!documentId) return;
+  await supabase.from("documents").update({ updated_at: new Date().toISOString() }).eq("id", documentId);
 }
 
 function attachEditingHandlers() {
